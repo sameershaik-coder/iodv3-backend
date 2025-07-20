@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blog-config
+data:
+  database_url: "sqlite:///./blog.db"
+  accounts_service_url: "http://accounts-service:8000"

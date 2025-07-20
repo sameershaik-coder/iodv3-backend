@@ -1,69 +1,78 @@
-Project Setup Plan: FastAPI Microservices Architecture
+Blog Microservice Implementation Plan
 
 1. Project Structure Setup
-   - Create base project structure
-   - Set up services directory for microservices
-   - Create accounts service directory structure
-   - Create shared utilities and common code directory
+   - Create blog service directory using accounts service as template
+   - Set up core components (database, models, schemas)
+   - Create API routes structure
 
-2. Development Environment Setup
-   - Create requirements.txt with all dependencies
-   - Set up Python virtual environment
-   - Create .gitignore file
-   - Set up environment variables configuration
+2. Database Models and Schemas
+   - Create Blog model with fields:
+     * id (UUID)
+     * title
+     * content
+     * author_id (foreign key to user in accounts service)
+     * created_at
+     * updated_at
+     * status (draft/published)
+     * tags
+   - Create BlogSchema and response models
+   - Set up database migrations
 
-3. Database Setup
-   - Create SQLite database configuration
-   - Set up SQLAlchemy models and database connection
-   - Create database migrations structure
-   - Implement base database utilities
+3. API Endpoints Implementation
+   - POST /blogs - Create new blog
+   - GET /blogs - List all blogs with pagination
+   - GET /blogs/{id} - Get single blog
+   - PUT /blogs/{id} - Update blog
+   - DELETE /blogs/{id} - Delete blog
+   - GET /blogs/user/{user_id} - Get user's blogs
+   - GET /blogs/tags/{tag} - Get blogs by tag
 
-4. Accounts Microservice Implementation
-   - Create user model
-   - Implement JWT authentication
-   - Create user routes:
-     * User registration
-     * User login
-     * User profile management (get, update, delete)
-   - Implement input validation
-   - Add error handling
-   - Create authentication middleware
+4. Authentication and Authorization
+   - Implement JWT validation (reuse from accounts service)
+   - Add authorization middleware
+   - Implement role-based access control
+   - Handle user verification with accounts service
 
-5. Docker Setup
-   - Create Dockerfile for accounts service
-   - Create docker-compose.yml for local development
-   - Set up environment variables for Docker
+5. Service Communication
+   - Set up HTTP client for accounts service communication
+   - Implement user verification endpoints
+   - Handle cross-service authentication
 
-6. Kubernetes Setup
-   - Create Kubernetes deployment manifests
-   - Create Kubernetes service manifests
-   - Create ConfigMaps and Secrets
-   - Set up ingress configuration
+6. Docker and Kubernetes Setup
+   - Create Dockerfile
+   - Create kubernetes manifests:
+     * deployment.yaml
+     * service.yaml
+     * config.yaml
+   - Set up environment variables
+   - Configure service discovery
 
-7. Testing Setup
-   - Create test directory structure
-   - Set up pytest configuration
-   - Create unit tests for user operations
-   - Create integration tests
-
-8. Documentation
-   - Create API documentation using FastAPI Swagger UI
-   - Add README.md with setup instructions
-   - Document deployment process
-   - Add inline code documentation
-
-9. CI/CD Setup (Future)
-   - Set up GitHub Actions workflow
-   - Configure automated testing
-   - Set up automated deployment
-
-Implementation Order:
-1. Basic project structure
-2. Development environment
-3. Database setup
-4. Core accounts functionality
-5. Authentication
-6. Docker configuration
 7. Testing
+   - Unit tests for CRUD operations
+   - Integration tests with accounts service
+   - API endpoint tests
+   - Authentication tests
+
 8. Documentation
-9. Kubernetes setup
+   - API documentation using FastAPI Swagger UI
+   - Update README.md
+   - Document service communication
+   - Add deployment instructions
+
+Implementation Steps:
+1. Set up project structure
+2. Create database models and schemas
+3. Implement core CRUD operations
+4. Add authentication and authorization
+5. Set up service communication
+6. Add Docker and Kubernetes configs
+7. Write tests
+8. Add documentation
+
+Technical Decisions:
+- Use SQLAlchemy with SQLite (same as accounts)
+- FastAPI for REST API
+- JWT for authentication
+- Alembic for database migrations
+- Pydantic for data validation
+- HTTPx for service-to-service communication
