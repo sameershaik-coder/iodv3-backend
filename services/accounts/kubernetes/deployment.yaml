@@ -15,6 +15,7 @@ spec:
       containers:
       - name: accounts-service
         image: accounts-service:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 8000
         env:

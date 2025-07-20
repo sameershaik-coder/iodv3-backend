@@ -1,0 +1,75 @@
+Starting Containers with Kubernetes
+Here's a step-by-step guide to start your accounts microservice using Kubernetes:
+
+1.0 Build the Docker image first:
+
+    cd /home/ioduser/src/iodv3-backend/services/accounts
+    docker build -t accounts-service:latest .
+
+2.0 If using Minikube (for local development):
+    # Start Minikube if not running
+    minikube start
+
+    # Point your Docker CLI to Minikube's Docker daemon
+    eval $(minikube docker-env)
+
+    # Rebuild the image in Minikube's context
+    docker build -t accounts-service:latest .
+
+3.0 Apply the Kubernetes configurations:
+
+# Create namespace (optional, but recommended)
+kubectl create namespace accounts
+
+# Apply ConfigMap and Secrets
+kubectl apply -f kubernetes/config.yaml
+
+3.1 Generate secrets.yaml
+go to scripts and run generate-secrets.sh, 
+    --> move secrets.yaml to kubernetes folder
+
+kubectl apply -f kubernetes/secrets.yaml
+
+# Apply the deployment and service
+kubectl apply -f kubernetes/deployment.yaml
+kubectl apply -f kubernetes/service.yaml
+
+4.0 Verify the deployment:
+
+# Check if pods are running
+kubectl get pods -l app=accounts-service
+
+# Check deployment status
+kubectl get deployment accounts-service
+
+# Check the service
+kubectl get service accounts-service
+
+# View logs of the pods
+kubectl logs -l app=accounts-service
+
+5.0 Access the service:
+
+# If using Minikube
+minikube service accounts-service --url
+    --> this will start the cluster
+
+# If using standard Kubernetes
+kubectl get service accounts-service -o wide
+
+6.0 Useful debugging commands:
+# Describe pods to see issues
+kubectl describe pods -l app=accounts-service
+
+# Get pod details
+kubectl get pods -l app=accounts-service -o wide
+
+# View container logs
+kubectl logs -f <pod-name>
+
+7.0 clean up
+
+kubectl delete -f kubernetes/deployment.yaml
+kubectl delete -f kubernetes/service.yaml
+kubectl delete -f kubernetes/config.yaml
+kubectl delete -f kubernetes/secrets.yaml
