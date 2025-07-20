@@ -1,20 +1,19 @@
 from sqlalchemy import Boolean, Column, String, DateTime, ForeignKey, Table, Integer
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 import uuid
 from datetime import datetime
 
 # Association table for blog tags
 blog_tags = Table('blog_tags', Base.metadata,
-    Column('blog_id', UUID(as_uuid=True), ForeignKey('blogs.id')),
-    Column('tag', String)
+    Column('blog_id', String(36), ForeignKey('blogs.id')),
+    Column('tag_id', Integer, ForeignKey('tags.id'))
 )
 
 class Blog(Base):
     __tablename__ = "blogs"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
     title = Column(String, index=True)
     slug = Column(String, unique=True, index=True)
     content = Column(String)

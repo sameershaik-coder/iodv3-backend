@@ -4,20 +4,19 @@ metadata:
   name: microservices-ingress
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
-  - host: api.local
-    http:
+  - http:
       paths:
-      - path: /api/accounts/(.*)
+      - path: /api/accounts(/|$)(.*)
         pathType: ImplementationSpecific
         backend:
           service:
             name: accounts-service
             port:
               number: 8000
-      - path: /api/blogs/(.*)
+      - path: /api/blogs(/|$)(.*)
         pathType: ImplementationSpecific
         backend:
           service:

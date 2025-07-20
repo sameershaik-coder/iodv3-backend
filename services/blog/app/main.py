@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(blogs.router, prefix="/blogs", tags=["blogs"])
+app.include_router(blogs.router, tags=["blogs"])
 
 @app.get("/health")
 def health_check():
