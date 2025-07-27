@@ -1,11 +1,20 @@
-.PHONY: help install dev build test deploy clean setup-registry deploy-enhanced test-comprehensive kind-enhanced kind-status-enhanced
+.PHONY: help install dev build test deploy clean setup-registry deploy-enhanced test-comprehensive kind-enhanced kind-status-enhanced deploy-phase2 deploy-phase3 monitor-resources test-performance
 
 ## Phase 1 Enhanced Commands
 
 setup-registry: ## Setup local Docker registry for Kind
 	./scripts/setup-registry.sh setup
 
-registry-status: ## Check local registry status
+registry-status: ## Check local registry	@echo "🚀 Phase 1 Enhanced (Recommended):"
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(setup-registry|deploy-enhanced|test-comprehensive|test-quick|kind-enhanced)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "🌟 Phase 2 Access Enhancement:"
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(deploy-phase2|setup-hosts|remove-hosts|show-hosts|test-hosts)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "⚡ Phase 3 Advanced Features:"
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(deploy-phase3|monitor-resources|test-performance)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "📦 Development (Docker Compose):"tus
 	./scripts/setup-registry.sh status
 
 registry-cleanup: ## Remove local Docker registry
@@ -58,6 +67,17 @@ show-hosts: ## Show current domain configuration
 
 test-hosts: ## Test domain resolution
 	./scripts/setup-hosts.sh test
+
+## Phase 3: Advanced Features
+
+deploy-phase3: ## Deploy Phase 3 advanced features (health checks, resource management, monitoring)
+	./scripts/deploy-phase3.sh
+
+monitor-resources: ## Monitor cluster resources and performance
+	./scripts/monitor-resources.sh
+
+test-performance: ## Run comprehensive performance tests
+	./scripts/test-performance.sh
 
 ## Original Commands
 
