@@ -14,6 +14,9 @@ registry-status: ## Check local registry	@echo "🚀 Phase 1 Enhanced (Recommend
 	@echo "⚡ Phase 3 Advanced Features:"
 	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(deploy-phase3|monitor-resources|test-performance)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
+	@echo "🌐 Ingress-based Access:"
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(deploy-ingress|deploy-hybrid|test-ingress|ingress-status)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
 	@echo "📦 Development (Docker Compose):"tus
 	./scripts/setup-registry.sh status
 
@@ -384,10 +387,34 @@ help: ## Show this help message
 	@echo ""
 	@echo "📖 Quick Start:"
 	@echo "  🚀 Enhanced (Phase 1):    make kind-enhanced"
+	@echo "  🌐 Hybrid Access:         make deploy-hybrid"
+	@echo "  🔗 Ingress Only:          make deploy-ingress"
 	@echo "  📦 Docker Development:    make dev-db && start services with Poetry"
 	@echo "  ☸️  Basic Kind:           make kind-deploy && make kind-ports"
 	@echo ""
-	@echo "💡 Tip: Use 'make kind-enhanced' for the best experience with automation and testing!"
+	@echo "💡 Tip: Use 'make deploy-hybrid' for both ingress and NodePort access!"
+
+## Ingress-based Access Commands
+
+deploy-ingress: ## Deploy with ingress-based access (production-like)
+	./scripts/deploy-ingress.sh
+
+deploy-hybrid: ## Deploy with both ingress and NodePort access (recommended)
+	./scripts/deploy-hybrid.sh
+
+test-ingress: ## Test ingress-based access functionality
+	./scripts/test-ingress.sh
+
+ingress-status: ## Show ingress status and configuration
+	@echo "📊 Ingress Status:"
+	@echo "=================="
+	kubectl get ingress -n iodv3-dev || echo "No ingress found in iodv3-dev namespace"
+	@echo ""
+	@echo "🌐 Host Configuration:"
+	@grep "iodv3.local" /etc/hosts || echo "No iodv3.local entries found in /etc/hosts"
+	@echo ""
+	@echo "📋 Service Status:"
+	kubectl get services -n iodv3-dev || echo "No services found in iodv3-dev namespace"
 
 .PHONY: help
 .DEFAULT_GOAL := help

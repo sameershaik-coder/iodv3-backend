@@ -2,24 +2,25 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: iodv3-ingress
-  namespace: iodv3-dev
+  namespace: iodv3-qa
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   rules:
-  - host: dev.iodv3.local
+  - host: qa.iodv3.local
     http:
       paths:
-      - path: /accounts
-        pathType: Prefix
+      - path: /accounts(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: accounts-service
             port:
               number: 8001
-      - path: /blog
-        pathType: Prefix
+      - path: /blog(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: blog-service
@@ -34,15 +35,15 @@ spec:
               number: 8000
   - http:
       paths:
-      - path: /accounts
-        pathType: Prefix
+      - path: /accounts(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: accounts-service
             port:
               number: 8001
-      - path: /blog
-        pathType: Prefix
+      - path: /blog(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: blog-service
