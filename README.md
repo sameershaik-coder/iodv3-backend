@@ -197,6 +197,25 @@ make test-performance
 make test-quick
 ```
 
+### Cleanup
+
+```bash
+# Complete cleanup of all resources
+make cleanup
+
+# Interactive selective cleanup
+make clean-selective
+
+# Specific component cleanup
+make cleanup-kind      # Kind cluster only
+make cleanup-docker    # Docker resources only
+make cleanup-hosts     # Host entries only
+make cleanup-files     # Temporary files only
+
+# See all cleanup options
+make cleanup-help
+```
+
 ## 🔧 Troubleshooting
 
 ### Ingress Issues
@@ -254,6 +273,7 @@ make test-performance
 - [Phase 3 Completion Report](./PHASE3_COMPLETION_REPORT.md) - Latest features
 - [Project Structure](./PROJECT_STRUCTURE.md) - Architecture overview
 - [Project Finalization](./PROJECT_FINALIZATION.md) - Completion summary
+- [Cleanup Guide](./CLEANUP_GUIDE.md) - Comprehensive cleanup documentation
 - [Deployment Analysis](./DEPLOYMENT_ANALYSIS.md) - Complete implementation plan
 
 ### Available Commands

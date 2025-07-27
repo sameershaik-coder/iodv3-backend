@@ -31,6 +31,8 @@ Phase 3 of the IOD V3 Backend enhancement has been successfully completed, imple
 
 ### ✅ Production-Ready Features
 - **Automated Deployment**: `scripts/deploy-phase3.sh` - complete Phase 3 automation
+- **Hybrid Access Support**: Both ingress-based and NodePort access methods
+- **Comprehensive Cleanup**: `scripts/cleanup.sh` - complete resource management
 - **Enhanced Makefile**: Phase 3 commands integrated into workflow
 - **Comprehensive Testing**: Multi-layered testing approach
 - **Monitoring Framework**: Foundation for advanced monitoring solutions
@@ -120,10 +122,15 @@ blog-service: {"status":"healthy","service":"blog"}
 
 ## Available Commands
 
+### Available Commands
+
 ### Phase 3 Management
 ```bash
 # Deploy Phase 3 features
 make deploy-phase3
+
+# Deploy with hybrid access (ingress + NodePort)
+make deploy-hybrid
 
 # Monitor system resources
 make monitor-resources
@@ -138,6 +145,24 @@ make show-hosts
 curl http://localhost:30000/health
 curl http://localhost:30001/health
 curl http://localhost:30002/health
+```
+
+### Cleanup & Resource Management
+```bash
+# Complete cleanup of all resources
+make cleanup
+
+# Interactive selective cleanup
+make clean-selective
+
+# Specific component cleanup
+make cleanup-kind      # Kind cluster only
+make cleanup-docker    # Docker resources only
+make cleanup-hosts     # Host entries only
+make cleanup-files     # Temporary files only
+
+# Cleanup help and options
+make cleanup-help
 ```
 
 ### Monitoring & Debugging

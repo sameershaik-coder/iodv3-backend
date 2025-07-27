@@ -385,6 +385,9 @@ help: ## Show this help message
 	@echo "🛠️  Setup & Utilities:"
 	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(registry|help|clean)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
+	@echo "🧹 Cleanup Commands:"
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(cleanup|clean-all|clean-selective)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
 	@echo "📖 Quick Start:"
 	@echo "  🚀 Enhanced (Phase 1):    make kind-enhanced"
 	@echo "  🌐 Hybrid Access:         make deploy-hybrid"
@@ -415,6 +418,52 @@ ingress-status: ## Show ingress status and configuration
 	@echo ""
 	@echo "📋 Service Status:"
 	kubectl get services -n iodv3-dev || echo "No services found in iodv3-dev namespace"
+
+## Cleanup Commands
+
+cleanup: ## Complete cleanup of all resources (Kind + Docker + hosts)
+	./scripts/cleanup.sh all
+
+clean-all: ## Alias for complete cleanup
+	./scripts/cleanup.sh all
+
+clean-selective: ## Interactive selective cleanup
+	./scripts/cleanup.sh selective
+
+cleanup-kind: ## Cleanup Kind cluster only
+	./scripts/cleanup.sh kind
+
+cleanup-cluster: ## Complete cluster cleanup (alias for cleanup-kind)
+	./scripts/cleanup.sh cluster
+
+cleanup-docker: ## Cleanup Docker containers and images
+	./scripts/cleanup.sh docker
+
+cleanup-registry: ## Cleanup Docker registry only
+	./scripts/cleanup.sh registry
+
+cleanup-hosts: ## Cleanup host entries only
+	./scripts/cleanup.sh hosts
+
+cleanup-files: ## Cleanup temporary files only
+	./scripts/cleanup.sh files
+
+cleanup-help: ## Show cleanup script help
+	./scripts/cleanup.sh help
+
+## Status and Verification Commands
+
+status: ## Check current deployment status
+	./scripts/status-check.sh
+
+check-status: ## Alias for status check
+	./scripts/status-check.sh
+
+verify-cleanup: ## Verify cleanup was successful
+	./scripts/status-check.sh
+
+deployment-status: ## Show detailed deployment status
+	./scripts/status-check.sh
 
 .PHONY: help
 .DEFAULT_GOAL := help
