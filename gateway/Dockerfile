@@ -10,14 +10,14 @@ RUN apt-get update && apt-get install -y \
 # Install Poetry
 RUN pip install poetry
 
-# Copy Poetry files
-COPY pyproject.toml poetry.lock* ./
+# Copy Poetry files and README
+COPY pyproject.toml poetry.lock* README.md ./
 
 # Configure Poetry
 RUN poetry config virtualenvs.create false
 
 # Install dependencies
-RUN poetry install
+RUN poetry install --no-root
 
 # Copy application code
 COPY gateway/ ./src/

@@ -51,4 +51,5 @@ spec:
   ports:
   - port: 8001
     targetPort: 8001
-  type: ClusterIP
+    nodePort: 30001
+  type: NodePort

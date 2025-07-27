@@ -1,11 +1,5 @@
 .PHONY: help install dev build test deploy clean
 
-help: ## Show this help message
-	@echo 'Usage: make [target]'
-	@echo ''
-	@echo 'Targets:'
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
-
 install: ## Install dependencies with Poetry
 	poetry install
 
@@ -68,6 +62,143 @@ dev-shell: ## Get shell access to a service (usage: make dev-shell service=postg
 	else \
 		docker compose -f docker-compose.db.yaml exec $(service) /bin/bash || docker compose -f docker-compose.db.yaml exec $(service) /bin/sh; \
 	fi
+
+# Kubernetes/Kind deployment commands
+kind-cluster: ## Create Kind cluster for development
+	@echo "Creating Kind cluster..."
+	kind create cluster --config k8s/kind-config.yaml --name iodv3-dev
+	@echo "Cluster created successfully!"
+	@echo "Use 'kubectl cluster-info --context kind-iodv3-dev' to verify"
+
+kind-delete: ## Delete Kind cluster
+	kind delete cluster --name iodv3-dev
+	@echo "Kind cluster deleted"
+
+kind-build-images: ## Build Docker images for Kind deployment
+	@echo "Building Docker images..."
+	docker build -t iodv3/accounts-service:dev -f services/accounts/Dockerfile .
+	docker build -t iodv3/blog-service:dev -f services/blog/Dockerfile .
+	docker build -t iodv3/api-gateway:dev -f gateway/Dockerfile .
+	@echo "Images built successfully!"
+
+kind-load-images: ## Load Docker images into Kind cluster
+	@echo "Loading images into Kind cluster..."
+	kind load docker-image iodv3/accounts-service:dev --name iodv3-dev
+	kind load docker-image iodv3/blog-service:dev --name iodv3-dev
+	kind load docker-image iodv3/api-gateway:dev --name iodv3-dev
+	@echo "Images loaded successfully!"
+
+kind-deploy-k8s: ## Deploy Kubernetes manifests
+	@echo "Deploying to Kubernetes..."
+	kubectl apply -f k8s/dev/namespace.yaml
+	kubectl apply -f k8s/dev/configmap.yaml
+	kubectl apply -f k8s/dev/postgres.yaml
+	kubectl apply -f k8s/dev/redis.yaml
+	@echo "Waiting for databases to be ready..."
+	kubectl wait --for=condition=ready pod -l app=postgres -n iodv3-dev --timeout=300s || true
+	kubectl wait --for=condition=ready pod -l app=redis -n iodv3-dev --timeout=300s || true
+	@echo "Deploying services..."
+	kubectl apply -f k8s/dev/accounts-service.yaml
+	kubectl apply -f k8s/dev/blog-service.yaml
+	kubectl apply -f k8s/dev/api-gateway.yaml
+	@echo "Waiting for services to be ready..."
+	kubectl wait --for=condition=ready pod -l app=accounts-service -n iodv3-dev --timeout=300s || true
+	kubectl wait --for=condition=ready pod -l app=blog-service -n iodv3-dev --timeout=300s || true
+	kubectl wait --for=condition=ready pod -l app=api-gateway -n iodv3-dev --timeout=300s || true
+	@echo "Deployment complete!"
+
+kind-deploy: ## Full Kind deployment (create cluster, build, load, deploy)
+	@echo "Starting full Kind deployment..."
+	make kind-cluster
+	make kind-build-images
+	make kind-load-images
+	make kind-deploy-k8s
+	@echo ""
+	@echo "🎉 Deployment complete!"
+	@echo ""
+	@echo "Services are accessible via NodePort:"
+	@echo "  API Gateway:     http://localhost:30000"
+	@echo "  Accounts Service: http://localhost:30001"
+	@echo "  Blog Service:     http://localhost:30002"
+	@echo ""
+	@echo "Run 'make kind-ports' to see detailed access information"
+	@echo "Run 'make kind-test' to test the deployment"
+
+kind-update-image: ## Update specific service image (usage: make kind-update-image service=accounts)
+	@if [ -z "$(service)" ]; then \
+		echo "Usage: make kind-update-image service=<service_name>"; \
+		echo "Available services: accounts, blog, gateway"; \
+		exit 1; \
+	fi
+	@echo "Updating $(service) service image..."
+	@if [ "$(service)" = "accounts" ]; then \
+		docker build -t iodv3/accounts-service:dev -f services/accounts/Dockerfile .; \
+		kind load docker-image iodv3/accounts-service:dev --name iodv3-dev; \
+		kubectl rollout restart deployment/accounts-service -n iodv3-dev; \
+	elif [ "$(service)" = "blog" ]; then \
+		docker build -t iodv3/blog-service:dev -f services/blog/Dockerfile .; \
+		kind load docker-image iodv3/blog-service:dev --name iodv3-dev; \
+		kubectl rollout restart deployment/blog-service -n iodv3-dev; \
+	elif [ "$(service)" = "gateway" ]; then \
+		docker build -t iodv3/api-gateway:dev -f gateway/Dockerfile .; \
+		kind load docker-image iodv3/api-gateway:dev --name iodv3-dev; \
+		kubectl rollout restart deployment/api-gateway -n iodv3-dev; \
+	else \
+		echo "Invalid service name. Use: accounts, blog, or gateway"; \
+		exit 1; \
+	fi
+	@echo "Service $(service) updated successfully!"
+
+kind-rebuild-deploy: ## Rebuild all images and redeploy
+	make kind-build-images
+	make kind-load-images
+	kubectl rollout restart deployment/accounts-service -n iodv3-dev
+	kubectl rollout restart deployment/blog-service -n iodv3-dev
+	kubectl rollout restart deployment/api-gateway -n iodv3-dev
+	@echo "All services redeployed!"
+
+kind-ports: ## Show service access information
+	@echo "Service access information for Kind deployment:"
+	@./scripts/access-services.sh
+
+kind-status: ## Check Kind deployment status
+	@echo "=== Cluster Info ==="
+	kubectl cluster-info --context kind-iodv3-dev
+	@echo ""
+	@echo "=== Pods Status ==="
+	kubectl get pods -n iodv3-dev
+	@echo ""
+	@echo "=== Services Status ==="
+	kubectl get services -n iodv3-dev
+	@echo ""
+	@echo "=== Endpoints ==="
+	kubectl get endpoints -n iodv3-dev
+
+kind-logs: ## View logs for a specific service (usage: make kind-logs service=accounts)
+	@if [ -z "$(service)" ]; then \
+		echo "Usage: make kind-logs service=<service_name>"; \
+		echo "Available services: accounts, blog, gateway, postgres, redis"; \
+		exit 1; \
+	fi
+	kubectl logs -n iodv3-dev deployment/$(service)-service -f
+
+kind-shell: ## Get shell access to a pod (usage: make kind-shell service=accounts)
+	@if [ -z "$(service)" ]; then \
+		echo "Usage: make kind-shell service=<service_name>"; \
+		echo "Available services: accounts, blog, gateway, postgres, redis"; \
+		exit 1; \
+	fi
+	kubectl exec -it -n iodv3-dev deployment/$(service) -- /bin/bash
+
+kind-test: ## Test the Kind deployment
+	@echo "Testing Kind deployment..."
+	@./scripts/test-kind-deployment.sh
+
+kind-clean: ## Clean up Kind deployment and resources
+	@echo "Cleaning up Kind deployment..."
+	@pkill -f "kubectl port-forward" || true
+	make kind-delete
+	@echo "Cleanup complete!"
 
 build: ## Build Docker images
 	./scripts/build.sh
@@ -151,3 +282,26 @@ setup: install ## Setup project for development
 	@echo "1. Copy .env.example to .env and update values"
 	@echo "2. Run 'make dev' to start development environment"
 	@echo "3. Run 'make test' to run tests"
+
+help: ## Show this help message
+	@echo "IOD V3 Backend - Available Commands:"
+	@echo ""
+	@echo "📦 Development (Docker Compose):"
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(dev|install)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "☸️  Kubernetes (Kind):"
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep '^kind' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "🧪 Testing & Quality:"
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(test|lint|format)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "🛠️  Setup & Utilities:"
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(setup|help|clean)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "📖 Quick Start:"
+	@echo "  Docker Development:  make dev-db && start services with Poetry"
+	@echo "  Kind Deployment:     make kind-deploy && make kind-ports"
+	@echo ""
+
+.PHONY: help
+.DEFAULT_GOAL := help
