@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: iodv3-ingress
+  namespace: iodv3-dev
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8000
+      - path: /accounts
+        pathType: Prefix
+        backend:
+          service:
+            name: accounts-service
+            port:
+              number: 8001
+      - path: /blog
+        pathType: Prefix
+        backend:
+          service:
+            name: blog-service
+            port:
+              number: 8002
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8000

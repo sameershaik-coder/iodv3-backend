@@ -42,6 +42,23 @@ kind-status-enhanced: ## Show enhanced cluster status
 kind-cleanup-enhanced: ## Enhanced cleanup (cluster + registry)
 	./scripts/deploy-kind-enhanced.sh cleanup
 
+## Phase 2: Access Method Enhancement
+
+deploy-phase2: ## Deploy Phase 2 enhancements (Ingress + host management)
+	./scripts/deploy-phase2.sh
+
+setup-hosts: ## Setup local domain resolution
+	./scripts/setup-hosts.sh add
+
+remove-hosts: ## Remove local domain resolution
+	./scripts/setup-hosts.sh remove
+
+show-hosts: ## Show current domain configuration
+	./scripts/setup-hosts.sh show
+
+test-hosts: ## Test domain resolution
+	./scripts/setup-hosts.sh test
+
 ## Original Commands
 
 install: ## Install dependencies with Poetry
