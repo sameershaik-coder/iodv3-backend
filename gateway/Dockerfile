@@ -17,11 +17,16 @@ COPY pyproject.toml poetry.lock* ./
 RUN poetry config virtualenvs.create false
 
 # Install dependencies
-RUN poetry install --only=main
+RUN poetry install
 
 # Copy application code
-COPY gateway/ .
+COPY gateway/ ./src/
+
+# Set Python path
+ENV PYTHONPATH=/app/src
+
+WORKDIR /app/src
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

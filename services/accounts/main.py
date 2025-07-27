@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 from typing import Optional
 import os
 
-from . import models, schemas, crud, auth
-from .database import SessionLocal, engine
+import models, schemas, crud, auth
+from database import SessionLocal, engine
 
 # Create tables
 models.Base.metadata.create_all(bind=engine)

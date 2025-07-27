@@ -6,8 +6,8 @@ import httpx
 import os
 from typing import Optional
 
-from . import models, schemas, crud
-from .database import SessionLocal, engine
+import models, schemas, crud
+from database import SessionLocal, engine
 
 # Create tables
 models.Base.metadata.create_all(bind=engine)
