@@ -1,4 +1,48 @@
-.PHONY: help install dev build test deploy clean
+.PHONY: help install dev build test deploy clean setup-registry deploy-enhanced test-comprehensive kind-enhanced kind-status-enhanced
+
+## Phase 1 Enhanced Commands
+
+setup-registry: ## Setup local Docker registry for Kind
+	./scripts/setup-registry.sh setup
+
+registry-status: ## Check local registry status
+	./scripts/setup-registry.sh status
+
+registry-cleanup: ## Remove local Docker registry
+	./scripts/setup-registry.sh cleanup
+
+deploy-enhanced: ## Enhanced Kind deployment with automation
+	./scripts/deploy-kind-enhanced.sh deploy
+
+deploy-enhanced-build-only: ## Build and load images only (enhanced)
+	./scripts/deploy-kind-enhanced.sh build-only
+
+test-comprehensive: ## Run comprehensive test suite
+	./scripts/test-comprehensive.sh all
+
+test-quick: ## Run quick connectivity tests
+	./scripts/test-comprehensive.sh quick
+
+test-auth: ## Test authentication flow only
+	./scripts/test-comprehensive.sh auth
+
+test-db: ## Test database connectivity only
+	./scripts/test-comprehensive.sh db
+
+kind-enhanced: ## Complete enhanced deployment and test
+	@echo "🚀 Starting Phase 1 enhanced deployment..."
+	./scripts/deploy-kind-enhanced.sh deploy
+	@echo ""
+	@echo "🧪 Running comprehensive tests..."
+	./scripts/test-comprehensive.sh all
+
+kind-status-enhanced: ## Show enhanced cluster status
+	./scripts/deploy-kind-enhanced.sh status
+
+kind-cleanup-enhanced: ## Enhanced cleanup (cluster + registry)
+	./scripts/deploy-kind-enhanced.sh cleanup
+
+## Original Commands
 
 install: ## Install dependencies with Poetry
 	poetry install
@@ -286,22 +330,27 @@ setup: install ## Setup project for development
 help: ## Show this help message
 	@echo "IOD V3 Backend - Available Commands:"
 	@echo ""
-	@echo "📦 Development (Docker Compose):"
+	@echo "� Phase 1 Enhanced (Recommended):"
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(setup-registry|deploy-enhanced|test-comprehensive|test-quick|kind-enhanced)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "�📦 Development (Docker Compose):"
 	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(dev|install)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "☸️  Kubernetes (Kind):"
-	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep '^kind' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep '^kind' | head -10 | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "🧪 Testing & Quality:"
-	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(test|lint|format)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(test)' | head -8 | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "🛠️  Setup & Utilities:"
-	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(setup|help|clean)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | grep -E '^(registry|help|clean)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "📖 Quick Start:"
-	@echo "  Docker Development:  make dev-db && start services with Poetry"
-	@echo "  Kind Deployment:     make kind-deploy && make kind-ports"
+	@echo "  🚀 Enhanced (Phase 1):    make kind-enhanced"
+	@echo "  📦 Docker Development:    make dev-db && start services with Poetry"
+	@echo "  ☸️  Basic Kind:           make kind-deploy && make kind-ports"
 	@echo ""
+	@echo "💡 Tip: Use 'make kind-enhanced' for the best experience with automation and testing!"
 
 .PHONY: help
 .DEFAULT_GOAL := help
