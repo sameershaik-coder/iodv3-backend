@@ -1,5 +1,25 @@
 # IOD V3 Backend - Microservices Architecture
 
+make kind-deploy-k8s
+
+# Check status
+make kind-status
+
+# View logs
+make kind-logs service=accounts
+make kind-logs service=blog
+make kind-logs service=gateway
+
+# Run tests
+./scripts/test-kind-deployment.sh
+
+# Access services
+./scripts/access-services.sh
+
+# Clean up
+make kind-clean
+
+
 A microservices-based backend system with FastAPI, PostgreSQL, and Kubernetes deployment.
 
 ## Architecture
